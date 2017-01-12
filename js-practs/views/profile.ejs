@@ -1,0 +1,60 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>Node Authentication</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:80px; word-wrap:break-word; }
+	</style>
+</head>
+<body>
+    <div id="contentWrap">
+            <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+            <div id="chatWrap">
+                <div id="chat"></div>
+                <form id="send-message">
+                    <input size="35" id="message"></input>
+                    <input type="submit"></input>
+                </form>
+            </div>
+            <div id="users"></div>
+    </div>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        jQuery(function($){
+                var socket = io.connect();
+                var $users = $('#users');
+                var $messageForm = $('#send-message');
+                var $messageBox = $('#message');
+                var $chat = $('#chat');
+
+                socket.on('usernames', function(data){
+                    var html = '';
+                    for(var i=0; i < data.length; i++){
+                        html += data[i] + '<br/>'
+                    }
+                    $users.html(html);
+			    });
+
+			    $messageForm.submit(function(e){
+                    e.preventDefault();
+                    socket.emit('send message', $messageBox.val(), function(data){
+                        $chat.append('<span class="error">' + data + "</span><br/>");
+                    });
+                    $messageBox.val('');
+			    });
+
+                socket.on('new message', function(data){
+                    displayMsg(data);
+                });
+
+                function displayMsg(data){
+                    $chat.append('<span class="msg"><b>' + data + "</span><br/>");
+                }
+            });
+    </script>
+</body>
+</html>
